@@ -129,8 +129,7 @@ Configure `appsettings.json`:
 ### Create daemon user
 ```bash
 sudo groupadd bouncyhsmuser
-sudo adduser --system -g bouncyhsmuser --no-create-home bouncyhsmuser
-sudo usermod -s /usr/sbin/nologin bouncyhsmuser
+sudo adduser --system -g bouncyhsmuser --shell /usr/sbin/nologin --no-create-home bouncyhsmuser
 ```
 
 ### Set filesystem rights
@@ -149,13 +148,13 @@ chmod u=rwx,g=rx /opt/BouncyHsm/Data
 ### Create unit file
 Create unit file in `/etc/systemd/system/bouncyhsm.service`.
 
-```
+```toml
 [Unit]
 Description=BouncyHsm instance
 
 [Service]
 WorkingDirectory=/opt/BouncyHsm/bin
-ExecStart=/usr/local/bin/dotnet /opt/BouncyHsm/bin/BouncyHsm.dll
+ExecStart=/usr/bin/dotnet /opt/BouncyHsm/bin/BouncyHsm.dll
 
 Restart=always
 RestartSec=10
