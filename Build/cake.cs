@@ -232,7 +232,7 @@ Task(BuildTarget.BuildAll)
 
             CreateZip(linuxNativeLibx64,
                        "Linux X64",
-                       JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native", "BouncyHsm.Pkcs11Lib-Linuxx64.zip"),
+                       JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native", "BouncyHsm.Pkcs11Lib-Linux-x64.zip"),
                        data);
         }
         else
@@ -243,14 +243,14 @@ Task(BuildTarget.BuildAll)
         string linuxNativeLibx32 = JoinPaths("build_linux", "BouncyHsm.Pkcs11Lib-x86.so");
         if (FileExists(linuxNativeLibx32))
         {
-            System.IO.Directory.CreateDirectory(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "native", "Linux-x86"));
+            CreateDirectory(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "native", "Linux-x86"));
             CopyFile(linuxNativeLibx32,
                 JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "native", "Linux-x86", "BouncyHsm.Pkcs11Lib.so"));
 
 
             CreateZip(linuxNativeLibx32,
                        "Linux X64",
-                       JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native", "BouncyHsm.Pkcs11Lib-Linuxx86.zip"),
+                       JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native", "BouncyHsm.Pkcs11Lib-Linux-x86.zip"),
                        data);
         }
         else
@@ -262,13 +262,13 @@ Task(BuildTarget.BuildAll)
         string rhelNativeLibx64 = JoinPaths("build_linux", "BouncyHsm.Pkcs11Lib-x64-rhel.so");
         if (FileExists(rhelNativeLibx64))
         {
-            System.IO.Directory.CreateDirectory(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "native", "Rhel-x64"));
+            CreateDirectory(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "native", "Rhel-x64"));
             CopyFile(rhelNativeLibx64,
                 JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "native", "Rhel-x64", "BouncyHsm.Pkcs11Lib.so"));
 
             CreateZip(rhelNativeLibx64,
                        "RHEL X64",
-                       JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native", "BouncyHsm.Pkcs11Lib-RHELx64.zip"),
+                       JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native", "BouncyHsm.Pkcs11Lib-RHEL-x64.zip"),
                        data);
         }
         else
@@ -276,7 +276,7 @@ Task(BuildTarget.BuildAll)
             Warning("Native lib {0} not found.", rhelNativeLibx64);
         }
 
-        System.IO.Directory.CreateDirectory(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/data"));
+        CreateDirectory(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/data"));
         System.IO.File.WriteAllText(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/data/keep.txt"), string.Empty);
 
         DeleteFiles(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/**/*.pdb"));
