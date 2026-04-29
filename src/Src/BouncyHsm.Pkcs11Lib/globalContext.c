@@ -392,10 +392,10 @@ void GlobalContextInit()
 				return;
 			}
 
-            if (portValue < 0 || portValue > 65535) 
-            { 
-                log_message(LOG_LEVEL_ERROR, "Error during reading Port. Invalid port number: %d.", portValue); 
-                return; 
+            if (portValue < 0 || portValue > 65535)
+            {
+                log_message(LOG_LEVEL_ERROR, "Error during reading Port. Invalid port number: %d.", portValue);
+                return;
             }
 
 			globalContext.port = portValue;

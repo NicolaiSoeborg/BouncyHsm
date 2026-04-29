@@ -2,7 +2,7 @@ SRC_DIR=../src/Src/BouncyHsm.Pkcs11Lib
 
 EXTRA_FLAGS=
 CC=clang
-CFLAGS= $(ARCH_FLAGS) -Wall -Wextra -O2 -I$(SRC_DIR) $(EXTRA_FLAGS)
+CFLAGS= $(ARCH_FLAGS) -Wall -Wextra -O2 -D_GNU_SOURCE -I$(SRC_DIR) $(EXTRA_FLAGS)
 
 HEADERFILES=$(SRC_DIR)/*.h $(SRC_DIR)/rpc/*.h $(SRC_DIR)/utils/*.h
 
@@ -17,11 +17,11 @@ all: build
 
 build64: ARCH_FLAGS = -m64
 build64: LIBNAME=BouncyHsm.Pkcs11Lib-x64.so
-build64: build cleao
+build64: build cleano
 
 build32: ARCH_FLAGS = -m32
 build32: LIBNAME=BouncyHsm.Pkcs11Lib-x86.so
-build32: build cleao
+build32: build cleano
 
 build: globalContext.o logger.o dllMain.o cmp.o rpc.o tcpTransport.o bouncy-pkcs11-utils.o bouncy-pkcs11.o platformHelper.o
 	$(CC) $(ARCH_FLAGS) -shared -o $(LIBNAME) \
