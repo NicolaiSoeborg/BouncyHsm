@@ -110,7 +110,11 @@ void BuildBouncyHsmPkcs11Lib(PlatformTarget platform)
         }
     };
 
-    MSBuild($"{SourceDirectory}BouncyHsm.Pkcs11Lib/BouncyHsm.Pkcs11Lib.vcxproj", settings);
+    try {
+        MSBuild($"{SourceDirectory}BouncyHsm.Pkcs11Lib/BouncyHsm.Pkcs11Lib.vcxproj", settings);
+    } catch (CakeException ex) {
+        Warning("Could not build native lib for platform {0}: {1}", nameof(platform), ex);
+    }
 }
 
 Task(BuildTarget.BuildPkcs11LibWin32)
@@ -120,28 +124,35 @@ Task(BuildTarget.BuildPkcs11LibWin32)
         BuildBouncyHsmPkcs11Lib(PlatformTarget.Win32);
 
         string nativeLib = $"{SourceDirectory}BouncyHsm.Pkcs11Lib/{configuration}/BouncyHsm.Pkcs11Lib.dll";
-        string destination = $"{ArtifactsTmpDirectory}/native/Win-x86";
-        CleanDirectory(destination);
-        CopyFile(nativeLib, $"{destination}/BouncyHsm.Pkcs11Lib.dll");
-
+        string destinationPath = $"{ArtifactsTmpDirectory}/native/Win-x86";
+        string destinationFile = $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll";
+        if (FileExists(destinationFile))
+        {
+            CleanDirectory(destinationPath);
+            CopyFile(nativeLib, $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll");
+        }
     });
 
-Task(BuildTarget.BuildPkcs11LibX64)
+Task(BuildTarget.BuildPkcs11LibWin64)
     .IsDependentOn(BuildTarget.Clean)
     .Does(() =>
     {
         BuildBouncyHsmPkcs11Lib(PlatformTarget.x64);
 
         string nativeLib = $"{SourceDirectory}BouncyHsm.Pkcs11Lib/x64/{configuration}/BouncyHsm.Pkcs11Lib.dll";
-        string destination = $"{ArtifactsTmpDirectory}/native/Win-x64";
-        CleanDirectory(destination);
-        CopyFile(nativeLib, $"{destination}/BouncyHsm.Pkcs11Lib.dll");
+        string destinationPath = $"{ArtifactsTmpDirectory}/native/Win-x64";
+        string destinationFile = $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll";
+        if (FileExists(destinationFile))
+        {
+            CleanDirectory(destinationPath);
+            CopyFile(nativeLib, $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll");
+        }
     });
 
 Task(BuildTarget.BuildBouncyHsmClient)
     .IsDependentOn(BuildTarget.Clean)
     .IsDependentOn(BuildTarget.BuildPkcs11LibWin32)
-    .IsDependentOn(BuildTarget.BuildPkcs11LibX64)
+    .IsDependentOn(BuildTarget.BuildPkcs11LibWin64)
     .Does<BuildData>((ctx, data) =>
     {
         string projectFile = $"{SourceDirectory}BouncyHsm.Client/BouncyHsm.Client.csproj";
@@ -179,7 +190,7 @@ Task(BuildTarget.BuildBouncyHsmClient)
 Task(BuildTarget.BuildAll)
     .IsDependentOn(BuildTarget.Clean)
     .IsDependentOn(BuildTarget.BuildPkcs11LibWin32)
-    .IsDependentOn(BuildTarget.BuildPkcs11LibX64)
+    .IsDependentOn(BuildTarget.BuildPkcs11LibWin64)
     .IsDependentOn(BuildTarget.BuildBouncyHsm)
     .IsDependentOn(BuildTarget.BuildBouncyHsmCli)
     .IsDependentOn(BuildTarget.BuildBouncyHsmClient)
@@ -187,16 +198,30 @@ Task(BuildTarget.BuildAll)
     {
         CopyDirectory($"{ArtifactsTmpDirectory}native", $"{ArtifactsTmpDirectory}BouncyHsm/native");
 
-        CreateZip(JoinPaths(ArtifactsTmpDirectory, "native/Win-x64/BouncyHsm.Pkcs11Lib.dll"),
-            "Win X64",
-            JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/wwwroot/native/BouncyHsm.Pkcs11Lib-Winx64.zip"),
-            data);
+        string windowsNativeLibx64 = JoinPaths(ArtifactsTmpDirectory, "native/Win-x64/BouncyHsm.Pkcs11Lib.dll");
+        if (FileExists(windowsNativeLibx64))
+        {
+            CreateZip(windowsNativeLibx64,
+                "Win X64",
+                JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/wwwroot/native/BouncyHsm.Pkcs11Lib-Winx64.zip"),
+                data);
+        }
+        else
+        {
+            Warning("Native lib {0} not found.", windowsNativeLibx64);
+        }
 
-        CreateZip(JoinPaths(ArtifactsTmpDirectory, "native/Win-x86/BouncyHsm.Pkcs11Lib.dll"),
-            "Win X64",
-            JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/wwwroot/native/BouncyHsm.Pkcs11Lib-Winx86.zip"),
-            data);
-
+        string windowsNativeLibx32 = JoinPaths(ArtifactsTmpDirectory, "native/Win-x86/BouncyHsm.Pkcs11Lib.dll");
+        if (FileExists(windowsNativeLibx32)) {
+            CreateZip(windowsNativeLibx32,
+                "Win X86",
+                JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/wwwroot/native/BouncyHsm.Pkcs11Lib-Winx86.zip"),
+                data);
+        }
+        else
+        {
+            Warning("Native lib {0} not found.", windowsNativeLibx32);
+        }
 
         string linuxNativeLibx64 = JoinPaths("build_linux", "BouncyHsm.Pkcs11Lib-x64.so");
         if (FileExists(linuxNativeLibx64))

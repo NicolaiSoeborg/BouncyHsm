@@ -33,11 +33,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(IncludeNativeLibs) == 'True'">
-    <None Include="..\..\..\artifacts\.tmp\native\Win-x86\BouncyHsm.Pkcs11Lib.dll">
+    <None Include="..\..\..\artifacts\.tmp\native\Win-x86\BouncyHsm.Pkcs11Lib.dll" Condition="Exists('..\..\..\artifacts\.tmp\native\Win-x86\BouncyHsm.Pkcs11Lib.dll')">
       <Pack>True</Pack>
       <PackagePath>runtimes/win-x86/native/</PackagePath>
     </None>
-    <None Include="..\..\..\artifacts\.tmp\native\Win-x64\BouncyHsm.Pkcs11Lib.dll">
+    <None Include="..\..\..\artifacts\.tmp\native\Win-x64\BouncyHsm.Pkcs11Lib.dll" Condition="Exists('..\..\..\artifacts\.tmp\native\Win-x64\BouncyHsm.Pkcs11Lib.dll')">
       <Pack>True</Pack>
       <PackagePath>runtimes/win-x64/native/</PackagePath>
     </None>

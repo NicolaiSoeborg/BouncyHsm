@@ -13,7 +13,7 @@ internal static class BuildTarget
     public const string BuildAll = nameof(BuildAll);
 
     public const string BuildPkcs11LibWin32 = nameof(BuildPkcs11LibWin32);
-    public const string BuildPkcs11LibX64 = nameof(BuildPkcs11LibX64);
+    public const string BuildPkcs11LibWin64 = nameof(BuildPkcs11LibWin64);
 
     public const string RebuildDocumentation = nameof(RebuildDocumentation);
 }
