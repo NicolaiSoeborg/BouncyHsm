@@ -15,6 +15,9 @@ internal static class BuildTarget
     public const string BuildPkcs11LibWin32 = nameof(BuildPkcs11LibWin32);
     public const string BuildPkcs11LibWin64 = nameof(BuildPkcs11LibWin64);
 
+    public const string BuildPkcs11LibLinux32 = nameof(BuildPkcs11LibLinux32);
+    public const string BuildPkcs11LibLinux64 = nameof(BuildPkcs11LibLinux64);
+
     public const string RebuildDocumentation = nameof(RebuildDocumentation);
 }
 
