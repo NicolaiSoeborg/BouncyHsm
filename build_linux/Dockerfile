@@ -13,6 +13,6 @@ COPY .. .
 
 WORKDIR /workspace/build_linux
 
-ENV BOUNCYOSENVIROMENT=rehl_like
+ENV BOUNCYOSENVIROMENT=rhel_like
 
 CMD ["make"]

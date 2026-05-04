@@ -1,7 +1,7 @@
 name: Build Bouncy Hsm
 on:
   workflow_dispatch
-  
+
 jobs:
   Build-linux-libs:
     runs-on: ubuntu-latest
@@ -55,15 +55,14 @@ jobs:
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: rhel-native-libs 
+          name: rhel-native-libs
           path: |
             build_linux/*.so
           retention-days: 1
 
   Build-Bouncy-Hsm:
     name: Build-Bouncy-Hsm
-    #runs-on: windows-latest TODO: use this after 4.5.2026
-    runs-on: windows-2025-vs2026
+    runs-on: windows-latest
     needs:
       - Build-linux-libs
       - Build-rhel-libs
@@ -100,11 +99,11 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - Build-Bouncy-Hsm
-    steps: 
+    steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Get latest tag 
-      id: varver 
+    - name: Get latest tag
+      id: varver
       run: |
         git fetch --prune --unshallow
         TAG=$(git describe --tags --abbrev=0)
@@ -116,11 +115,11 @@ jobs:
     - name: Unzip artifacts
       run: unzip artifacts/BouncyHsm.zip -d artifacts/BouncyHsm
     - name: Build Docker image
-      run: | 
-        docker build -t bouncyhsm:latest -t bouncyhsm:${{ steps.varver.outputs.tag }} -f Build/DockerImage/Dockerfile . 
+      run: |
+        docker build -t bouncyhsm:latest -t bouncyhsm:${{ steps.varver.outputs.tag }} -f Build/DockerImage/Dockerfile .
         docker save bouncyhsm -o docker-bouncyhsm.tar
     - name: Upload artifact
-      uses: actions/upload-artifact@v4 
+      uses: actions/upload-artifact@v4
       with:
         name: docker-image
         path: docker-bouncyhsm.tar
