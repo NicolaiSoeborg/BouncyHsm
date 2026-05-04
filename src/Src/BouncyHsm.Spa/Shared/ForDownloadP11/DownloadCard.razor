@@ -22,7 +22,7 @@
                 <p>@this.Description</p>
             </div>
             <div class="col-2 align-items-center">
-                <a href="@GetDownloadLink()" class="btn btn-sm btn-outline-primary pe-4" download>
+                <a href="@GetDownloadLink()" class="btn btn-sm btn-outline-primary @(this.IsAvailable ? "" : "disabled") pe-4" download>
                     <span class="icon-cloud-download icon-1x"></span> Download
                 </a>
             </div>
@@ -53,16 +53,22 @@
         set;
     } = string.Empty;
 
+    private bool IsAvailable
+    {
+        get;
+        set;
+    } = true;
+
     private string GetDownloadLink()
     {
         string fileName = (this.Platform, this.Architecture) switch
         {
-            (DownloadPlatform.Windows, "x64") => "BouncyHsm.Pkcs11Lib-Winx64.zip",
-            (DownloadPlatform.Windows, "x86") => "BouncyHsm.Pkcs11Lib-Winx86.zip",
-            (DownloadPlatform.Linux, "x64") => "BouncyHsm.Pkcs11Lib-Linuxx64.zip",
-            (DownloadPlatform.Linux, "x86") => "BouncyHsm.Pkcs11Lib-Linuxx86.zip",
-            (DownloadPlatform.RHEL, "x64") => "BouncyHsm.Pkcs11Lib-RHELx64.zip",
-            (DownloadPlatform.RHEL, "x86") => "BouncyHsm.Pkcs11Lib-RHELx86.zip",
+            (DownloadPlatform.Windows, "x64") => "BouncyHsm.Pkcs11Lib-Windows-x64.zip",
+            (DownloadPlatform.Windows, "x86") => "BouncyHsm.Pkcs11Lib-Windows-x86.zip",
+            (DownloadPlatform.Linux, "x64") => "BouncyHsm.Pkcs11Lib-Linux-x64.zip",
+            (DownloadPlatform.Linux, "x86") => "BouncyHsm.Pkcs11Lib-Linux-x86.zip",
+            (DownloadPlatform.RHEL, "x64") => "BouncyHsm.Pkcs11Lib-RHEL-x64.zip",
+            (DownloadPlatform.RHEL, "x86") => "BouncyHsm.Pkcs11Lib-RHEL-x86.zip",
 
             _ => throw new InvalidProgramException($"Unsupported platform {this.Platform} and architecture {this.Architecture}.")
         };

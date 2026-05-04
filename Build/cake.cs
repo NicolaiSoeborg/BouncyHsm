@@ -112,6 +112,10 @@ void BuildBouncyHsmPkcs11Lib(PlatformTarget platform)
     };
 
     MSBuild($"{SourceDirectory}BouncyHsm.Pkcs11Lib/BouncyHsm.Pkcs11Lib.vcxproj", settings);
+
+    string nativeLib = $"{SourceDirectory}BouncyHsm.Pkcs11Lib/{configuration}/BouncyHsm.Pkcs11Lib.dll";
+    string destinationPath = JoinPaths(ArtifactsTmpDirectory, "native", platform == PlatformTarget.x64 ? "Windows-x64" : "Windows-x86");
+    CopyFile(nativeLib, $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll");
 }
 
 Task(BuildTarget.BuildPkcs11LibWin32)
@@ -120,15 +124,6 @@ Task(BuildTarget.BuildPkcs11LibWin32)
     .Does(() =>
     {
         BuildBouncyHsmPkcs11Lib(PlatformTarget.Win32);
-
-        string nativeLib = $"{SourceDirectory}BouncyHsm.Pkcs11Lib/{configuration}/BouncyHsm.Pkcs11Lib.dll";
-        string destinationPath = $"{ArtifactsTmpDirectory}/native/Win-x86";
-        string destinationFile = $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll";
-        if (FileExists(destinationFile))
-        {
-            CleanDirectory(destinationPath);
-            CopyFile(nativeLib, $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll");
-        }
     });
 
 Task(BuildTarget.BuildPkcs11LibWin64)
@@ -137,15 +132,6 @@ Task(BuildTarget.BuildPkcs11LibWin64)
     .Does(() =>
     {
         BuildBouncyHsmPkcs11Lib(PlatformTarget.x64);
-
-        string nativeLib = $"{SourceDirectory}BouncyHsm.Pkcs11Lib/x64/{configuration}/BouncyHsm.Pkcs11Lib.dll";
-        string destinationPath = $"{ArtifactsTmpDirectory}/native/Win-x64";
-        string destinationFile = $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll";
-        if (FileExists(destinationFile))
-        {
-            CleanDirectory(destinationPath);
-            CopyFile(nativeLib, $"{destinationPath}/BouncyHsm.Pkcs11Lib.dll");
-        }
     });
 
 Task(BuildTarget.BuildPkcs11LibLinux32)
@@ -153,12 +139,9 @@ Task(BuildTarget.BuildPkcs11LibLinux32)
     .WithCriteria(RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X86 && !IsRunningOnWindows())
     .Does(() =>
     {
-        //BuildBouncyHsmPkcs11Lib(PlatformTarget.Win32);
-
         string linuxNativeLibx86 = JoinPaths("build_linux", "BouncyHsm.Pkcs11Lib-Linux-x86.so");
         if (FileExists(linuxNativeLibx86))
         {
-            CleanDirectory(JoinPaths(ArtifactsTmpDirectory, "native", "Linux-x86"));
             CopyFile(linuxNativeLibx86,
                 JoinPaths(ArtifactsTmpDirectory, "native", "Linux-x86", "BouncyHsm.Pkcs11Lib.so"));
         }
@@ -169,8 +152,6 @@ Task(BuildTarget.BuildPkcs11LibLinux64)
     .WithCriteria(RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64 && !IsRunningOnWindows())
     .Does(() =>
     {
-        //BuildBouncyHsmPkcs11Lib(PlatformTarget.Win64);
-
         string linuxNativeLibx64 = JoinPaths("build_linux", "BouncyHsm.Pkcs11Lib-Linux-x64.so");
         if (FileExists(linuxNativeLibx64))
         {
@@ -191,14 +172,6 @@ Task(BuildTarget.BuildBouncyHsmClient)
     {
         string projectFile = $"{SourceDirectory}BouncyHsm.Client/BouncyHsm.Client.csproj";
 
-        /*string RHELNativeLibx64 = JoinPaths("build_linux", "BouncyHsm.Pkcs11Lib-x64-RHEL.so");
-        if (FileExists(RHELNativeLibx64))
-        {
-            CleanDirectory(JoinPaths(ArtifactsTmpDirectory, "native", "RHEL-x64"));
-            CopyFile(RHELNativeLibx64,
-                JoinPaths(ArtifactsTmpDirectory, "native", "RHEL-x64", "BouncyHsm.Pkcs11Lib.so"));
-        }*/
-
         DotNetPackSettings settings = new DotNetPackSettings()
         {
             Configuration = configuration,
@@ -217,25 +190,22 @@ Task(BuildTarget.BuildAll)
     .IsDependentOn(BuildTarget.Clean)
     .IsDependentOn(BuildTarget.BuildPkcs11LibWin32)
     .IsDependentOn(BuildTarget.BuildPkcs11LibWin64)
+    .IsDependentOn(BuildTarget.BuildPkcs11LibLinux32)
+    .IsDependentOn(BuildTarget.BuildPkcs11LibLinux64)
     .IsDependentOn(BuildTarget.BuildBouncyHsm)
     .IsDependentOn(BuildTarget.BuildBouncyHsmCli)
     .IsDependentOn(BuildTarget.BuildBouncyHsmClient)
     .Does<BuildData>((ctx, data) =>
     {
-        CopyDirectory($"{ArtifactsTmpDirectory}native", $"{ArtifactsTmpDirectory}BouncyHsm/native");
+        // Nah, not the raw so/dll but the ZIP file with info
+        // CopyDirectory($"{ArtifactsTmpDirectory}native", $"{ArtifactsTmpDirectory}BouncyHsm/wwwroot/native");
 
-        var nativeTargets = new[]
+        foreach (var os in new[] { "Windows", "Linux", "RHEL" })
         {
-            (os: "windows", arch: "x64"),
-            (os: "windows", arch: "x86"),
-            (os: "linux", arch: "x64"),
-            (os: "linux", arch: "x86"),
-            (os: "rhel", arch: "x64"),
-        };
-
-        foreach (var target in nativeTargets)
-        {
-            CreateZip(target.os, target.arch, data);
+            foreach (var arch in new[] { "x64", "x86" })
+            {
+                CreateZip(os, arch, data);
+            }
         }
 
         CreateDirectory(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm/data"));
@@ -257,11 +227,14 @@ Task(BuildTarget.BuildAll)
         Zip(JoinPaths(ArtifactsTmpDirectory, "BouncyHsm.Cli"), JoinPaths(ArtifactsDirectory, "BouncyHsm.Cli.zip"));
     });
 
+
+
 void CreateZip(string os, string arch, BuildData buildData)
 {
-    string dllFile = GetNativeLibraryPath(os, arch);
-    string destination = JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native", $"BouncyHsm.Pkcs11Lib-{os}-{arch}.zip");
-    string destinationDirectory = System.IO.Path.GetDirectoryName(destination)!;
+    string ext = os == "Windows" ? "dll" : "so";
+    string dllFile = JoinPaths(ArtifactsTmpDirectory, "native", $"{os}-{arch}", $"BouncyHsm.Pkcs11Lib.{ext}");
+    string destinationDirectory = JoinPaths(ArtifactsTmpDirectory, "BouncyHsm", "wwwroot", "native");
+    string destinationFile = $"{destinationDirectory}/BouncyHsm.Pkcs11Lib-{os}-{arch}.zip";
 
     if (!FileExists(dllFile))
     {
@@ -272,7 +245,7 @@ void CreateZip(string os, string arch, BuildData buildData)
     CreateDirectory(destinationDirectory);
     Debug("Creating ZIP file from dll {0}", dllFile);
 
-    using FileStream fs = new FileStream(destination, FileMode.Create);
+    using FileStream fs = new FileStream(destinationFile, FileMode.Create);
     using ZipArchive archive = new ZipArchive(fs, ZipArchiveMode.Create);
     archive.CreateEntryFromFile(dllFile, System.IO.Path.GetFileName(dllFile), CompressionLevel.Optimal);
     using Stream readmeStream = archive.CreateEntry("Readme.txt").Open();
@@ -290,16 +263,6 @@ void CreateZip(string os, string arch, BuildData buildData)
 
     readmeStream.Write(content);
     readmeStream.Flush();
-}
-
-string GetNativeLibraryPath(string os, string arch)
-{
-    os = os.ToLowerInvariant();
-    
-    if (os == "windows")
-        return JoinPaths(ArtifactsTmpDirectory, "native", $"{os}-{arch}", "BouncyHsm.Pkcs11Lib.dll");
-    else
-        return JoinPaths("build_linux", $"BouncyHsm.Pkcs11Lib-{os}-{arch}.so");
 }
 
 void CopyLicenses(string outFolder, BuildData buildData)
